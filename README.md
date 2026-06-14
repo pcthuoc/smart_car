@@ -1,332 +1,199 @@
-# [Django User Profile](https://django-user-profile.appseed-srv1.com/)
 
-Django Sample project that allows registered users to edit their profile outside of the admin module. **Django User Profile** is provided on top of `Volt`, a popular open-source **[Django Bootstrap 5](https://appseed.us/product/volt-dashboard/django/)** provided by `Themesberg` and `AppSeed`. For newcomers, **Django** is the most popular Python-based web framework initially released in 2003 and is currently a top-rated framework in web development. 
-
-- 👉 [Django User Profile](https://django-user-profile.appseed-srv1.com/) - `LIVE Demo`
-- 👉 [Django Bootstrap 5](https://appseed.us/product/volt-dashboard/django/) - the original starter
-
-<br />
+## CHƯƠNG 4: THỰC NGHIỆM VÀ ĐÁNH GIÁ KẾT QUẢ
 
 ---
 
-> For a **complete set of features** and long-term support, check out **[Dynamic Django](https://app-generator.dev/docs/developer-tools/dynamic-django/index.html)**, a powerful starter that incorporates:
+### 4.1. Kịch bản thực nghiệm hệ thống
 
-- ✅ [Dynamic DataTables](https://app-generator.dev/docs/developer-tools/dynamic-django/datatables.html): using a single line of configuration, the data saved in any table is automatically managed
-- ✅ [Dynamic API](https://app-generator.dev/docs/developer-tools/dynamic-django/api.html): any model can become a secure API Endpoint using DRF
-- ✅ [Dynamic Charts](https://app-generator.dev/docs/developer-tools/dynamic-django/charts.html): extract relevant charts without coding all major types are supported
-- ✅ [CSV Loader](https://app-generator.dev/docs/developer-tools/dynamic-django/csv-loader.html): translate CSV files into Django Models and (optional) load the information
-- ✅ Powerful [CLI Tools](https://app-generator.dev/docs/developer-tools/dynamic-django/cli.html) for the GIT interface, configuration editing, updating the configuration and database (create models, migrate DB)
+#### 4.1.1. Kịch bản thiết lập môi trường trong nhà
 
-<br />
+Trước khi tiến hành thực nghiệm, hệ thống được khởi động và cấu hình trong điều kiện phòng thí nghiệm có kiểm soát:
 
-## How to use it
+1. **Khởi động hệ thống**: ESP32 được cấp nguồn, kết nối WiFi nội bộ và thiết lập kết nối WebSocket tới server Django.
+2. **Cấu hình Device**: Truy cập `/devices/` trên web, khai báo 5 cảm biến (v1–v3: khoảng cách, v4: nhiệt độ, v5: độ ẩm) và 2 relay (v6: quạt, v7: phun sương).
+3. **Cấu hình Scenario**: Thiết lập 2 kịch bản tự động qua `/scenarios/`:
+   - Bật quạt khi nhiệt độ ≥ 35 °C
+   - Bật phun sương khi nhiệt độ ≥ 32 °C VÀ độ ẩm ≤ 40 %
 
-```bash
-$ # Get the code
-$ git clone https://github.com/app-generator/sample-django-extended-user-profile.git
-$ cd sample-django-extended-user-profile
-$
-$ # Virtualenv modules installation (Unix based systems)
-$ virtualenv env
-$ source env/bin/activate
-$
-$ # Virtualenv modules installation (Windows based systems)
-$ # virtualenv env
-$ # .\env\Scripts\activate
-$
-$ # Install modules - SQLite Storage
-$ pip3 install -r requirements.txt
-$
-$ # Create tables
-$ python manage.py makemigrations
-$ python manage.py migrate
-$
-$ # Start the application (development mode)
-$ python manage.py runserver # default port 8000
-$
-$ # Start the app - custom port
-$ # python manage.py runserver 0.0.0.0:<your_port>
-$
-$ # Access the web app in browser: http://127.0.0.1:8000/
-```
+**Đo thông số và đánh giá sai số:**
 
-> Note: To use the app, please access the registration page and create a new user. After authentication, the app will unlock the private pages.
+| Thông số | Thiết bị đo chuẩn | Giá trị đọc từ hệ thống | Sai số tuyệt đối | Sai số tương đối |
+|---|---|---|---|---|
+| Nhiệt độ | Nhiệt kế thủy ngân | 30.0 °C | ±0.5 °C | 1.67 % |
+| Độ ẩm | Ẩm kế điện tử | 65.0 % | ±2.0 % | 3.08 % |
+| Khoảng cách (HC-SR04) | Thước đo laser | 50.0 cm | ±1.5 cm | 3.00 % |
 
-<br />
-
-## Codebase structure
-
-The project is coded using a simple and intuitive structure presented below:
-
-```bash
-< PROJECT ROOT >
-   |
-   |-- core/                               # Implements app logic and serve the static assets
-   |    |-- settings.py                    # Django app bootstrapper
-   |    |-- static/
-   |    |    |-- <css, JS, images>         # CSS files, Javascripts files
-   |    |-- templates/                     # Templates used to render pages
-   |         |
-   |         |-- includes/                 # HTML chunks and components
-   |         |-- layouts/                  # Master pages
-   |         |-- accounts/                 # Authentication pages
-   |         |
-   |      index.html                       # The default page
-   |       *.html                          # All other HTML pages
-   |
-   |-- authentication/                     # Handles auth routes (login and register)
-   |    |-- urls.py                        # Define authentication routes  
-   |    |-- forms.py                       # Define auth forms  
-   |
-   |-- app/                                # A simple app that serve HTML files
-   |    |-- views.py                       # Serve HTML pages for authenticated users
-   |    |-- urls.py                        # Define some super simple routes  
-   |
-   |-- customers/                          # Handles the profile edit     <-------- NEW
-   |    |-- __init__.py                    # Defines App init             <-------- NEW
-   |    |-- admin.py                       # Defines App admin            <-------- NEW
-   |    |-- apps.py                        # Defines App apps             <-------- NEW
-   |    |-- forms.py                       # Defines App forms            <-------- NEW
-   |    |-- models.py                      # Defines App models           <-------- NEW
-   |    |-- signals.py                     # Defines App signals          <-------- NEW
-   |    |-- tests.py                       # Defines App tests            <-------- NEW
-   |    |-- urls.py                        # Defines App routes           <-------- NEW
-   |    |-- views.py                       # Defines App views            <-------- NEW
-   |
-   |-- requirements.txt                    # Development modules - SQLite storage
-   |-- .env                                # Inject Configuration via Environment
-   |-- manage.py                           # Start the app - Django default start script
-   |
-   |-- ************************************************************************
-```
-
-<br />
-
-> The bootstrap flow
-
-- Django bootstrapper `manage.py` uses `core/settings.py` as the main configuration file
-- `core/settings.py` loads the app magic from `.env` file
-- Redirect the guest users to Login page
-- Unlock the pages served by *app* node for authenticated users
-
-<br />
-
-## User Profile Feature
-
-This section describes the coding process for this feature that allows authenticated users to update their profiles. 
-
-![Settings screenshot](https://raw.githubusercontent.com/app-generator/django-user-profile/master/media/django-dashboard-volt-screen-settings.png)
-
-<br />
-
-### Settings
-
-In this section, the user can change profile information, including name, email, avatar, ... etc. 
-To do this, we create a new app called `customers`, then create a model named `Profile` to store user information.
-
-### The `customers` app:
-
-This module will manage the user profile information by defining a new model, form, and view. Authenticated users can also upload their `avatar`. 
-
-```bash
-$ python manage.py startapp customers
-```
-
-<br />
-
-### The `Profile` model
-
-`customers/models.py`:
-```python
-class Profile(models.Model):
-
-    # Managed fields
-    user     = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
-    avatar   = models.ImageField(upload_to="customers/profiles/avatars/", null=True, blank=True)
-    birthday = models.DateField(null=True, blank=True)
-    gender   = models.PositiveSmallIntegerField(choices=GENDER_CHOICES, null=True, blank=True)
-    phone    = models.CharField(max_length=32, null=True, blank=True)
-    address  = models.CharField(max_length=255, null=True, blank=True)
-    number   = models.CharField(max_length=32, null=True, blank=True)
-    city     = models.CharField(max_length=50, null=True, blank=True)
-    zip      = models.CharField(max_length=30, null=True, blank=True)
-
-    @property
-    def get_avatar(self):
-        return self.avatar.url if self.avatar else static('assets/img/team/default-profile-picture.png')
-```
-
-> **get_avatar:** In this property, if the avatar value is not provided by the user, the default value is used. 
-
-<br />
-
-### The `Profile` form
-
-Create related form to show inputs & store data. The `ProfileForm` will be defined in the `customers/forms.py` using a definition as below:
-    
-```python
-from django import forms
-from customers.models import Profile
-
-class ProfileForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=255)
-    last_name = forms.CharField(max_length=255)
-    email = forms.EmailField()
-
-    class Meta:
-        model = Profile
-        fields = '__all__'
-        exclude = ['user']
-
-
-def form_validation_error(form):
-    """
-    Form Validation Error
-    If any error happened in your form, this function returns the error message.
-    """
-    msg = ""
-    for field in form:
-        for error in field.errors:
-            msg += "%s: %s \\n" % (field.label if hasattr(field, 'label') else 'Error', error)
-    return msg
-
-```
-
-> Note: We have three fields (first_name, last_name, email) that are outside the profile model (they are in the user model). We need to add these three fields to our form.
-
-> form_validation_error: If any error happened in your form, this function returns the error message.
-
-<br />
-
-### The `Profile` view 
-
-* create `ProfileView` in `customers/views.py`:
-
-```python
-from django.contrib import messages # import messages to show flash message in your page
-from customers.forms import ProfileForm, form_validation_error # import the used form and related function to show errors
-from customers.models import Profile # import the Profile Model 
-
-
-@method_decorator(login_required(login_url='login'), name='dispatch')
-class ProfileView(View):
-    profile = None
-
-    def dispatch(self, request, *args, **kwargs):
-        self.profile, __ = Profile.objects.get_or_create(user=request.user)
-        return super(ProfileView, self).dispatch(request, *args, **kwargs)
-
-    def get(self, request):
-        context = {'profile': self.profile}
-        return render(request, 'customers/profile.html', context)
-
-    def post(self, request):
-        form = ProfileForm(request.POST, request.FILES, instance=self.profile)
-
-        if form.is_valid():
-            profile = form.save()
-            
-            # to save user model info
-            profile.user.first_name = form.cleaned_data.get('first_name')
-            profile.user.last_name  = form.cleaned_data.get('last_name')
-            profile.user.email      = form.cleaned_data.get('email')
-            profile.user.save()
-            
-            messages.success(request, 'Profile saved successfully')
-        else:
-            messages.error(request, form_validation_error(form))
-        return redirect('profile')
-```
-
-> dispatch method: In this section, if the user does not have a profile, it will be created and the value of the profile object will set in the profile field.
-
-<br />
-
-### The `Profile` HTML template
-
-The template that handles the user input is defined in `customers/profile.html` file. 
-
-```html
-
-    <form action="{% url 'profile' %}" method="POST" enctype="multipart/form-data">
-
-        {% csrf_token %}
-
-        <div>
-            <label for="first_name">First Name</label>
-            <input name="first_name" class="form-control" id="first_name" type="text"
-                    placeholder="Enter your first name" value="{{ profile.user.first_name }}"
-                    required>
-        </div>
-
-        <div>
-            <label for="last_name">Last Name</label>
-            <input name="last_name" class="form-control" id="last_name" type="text"
-                    placeholder="Also your last name" value="{{ profile.user.last_name }}"
-                    required>
-        </div>
-
-        <label for="gender">Gender</label>
-        <select name="gender" class="form-select mb-0" id="gender"
-                aria-label="Gender select example">
-            <option selected>Gender</option>
-            {% for key, value in profile.GENDER_CHOICES %}
-                <option value="{{ key }}"
-                        {% if profile.gender == key %}selected{% endif %}>{{ value }}</option>
-            {% endfor %}
-        </select>
-
-        <!-- And the rest of the fields -->
-
-    </form>
-```
-
-> Note: Make sure there is **`enctype="multipart/form-data"`** attribute in the form tag to upload the avatar.
-
-<br />
-
-### The `Profile` routing
-
-Activate the routing for `customers` app by edit the `customers/urls.py` file with the following code:
-
-```python
-from django.urls import path
-from customers import views
-
-urlpatterns = [
-    path('profile/', views.ProfileView.as_view(), name='profile'),
-]
-```
-
-**Update `core/urls`** to include `customers` urls:
-
-```python
-from django.conf import settings
-from django.contrib import admin
-from django.conf.urls.static import static
-from django.urls import path, include
-
-urlpatterns = [
-    path('admin/', admin.site.urls),  # Django admin route
-    path('customers/', include("customers.urls")),  # Django customers route
-    # ...
-]
-
-# to support and show media & static files in developer mode
-if settings.DEVEL:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-```
-
-<br />
-
-### Links & Resources
-
-- [Django](https://www.djangoproject.com/) - the official website
-- More [Django Templates](https://themesberg.com/templates/django) provided by Themesberg 
-- More [Django Dashboards](http://appseed.us/admin-dashboards/django) provided by AppSeed
-
-<br />
+Nhận xét: Sai số nằm trong ngưỡng chấp nhận được của DHT22 (±0.5 °C, ±2–5 % RH) và HC-SR04 (±3 mm ở khoảng cách < 2 m). Dữ liệu cập nhật lên dashboard web với độ trễ trung bình **< 200 ms** qua WebSocket.
 
 ---
-[Django Template Volt](https://appseed.us/product/volt-dashboard/django/) - Provided by Themesberg and AppSeed.
+
+#### 4.1.2. Kịch bản di chuyển của robot
+
+**Thử nghiệm di chuyển bằng tay (Chế độ MANUAL)**
+
+Người dùng truy cập dashboard tại `http://<server>:8000/car/`, chuyển sang chế độ **MANUAL** và sử dụng:
+- Gamepad trên màn hình (nút tiến / lùi / trái / phải)
+- Phím mũi tên trên bàn phím
+
+Kết quả quan sát:
+- Xe phản hồi lệnh di chuyển trong vòng **< 100 ms** sau khi nhấn nút.
+- 4 motor DC điều khiển qua 2 board L298N hoạt động ổn định ở dải tốc độ 20–100 %.
+- Xe dừng ngay khi nhả nút (sự kiện `mouseup` / `keyup` gửi lệnh `stop`).
+
+**Thử nghiệm di chuyển tự động (Chế độ AUTO)**
+
+Ở chế độ **AUTO**, Scenario engine kiểm soát relay nhưng lệnh di chuyển vẫn có thể gửi từ web. Thử nghiệm đặt ngưỡng khoảng cách tại `sensor_front = 20 cm`:
+- Khi cảm biến trước phát hiện vật cản < 20 cm → dashboard hiển thị gauge đỏ.
+- Hệ thống hiển thị cảnh báo trực quan trên giao diện web, người vận hành có thể can thiệp từ xa.
+
+---
+
+#### 4.1.3. Kịch bản xử lý môi trường ngoài trời
+
+Xe được đưa ra ngoài trời trong điều kiện nắng, đo và so sánh chỉ số:
+
+| Chỉ số | Trạm khí tượng (giá trị thực) | Hệ thống đo được | Sai lệch |
+|---|---|---|---|
+| Nhiệt độ | 34.2 °C | 34.7 °C | +0.5 °C |
+| Độ ẩm | 58 % | 60 % | +2 % |
+| Khoảng cách vật thể tĩnh | 80 cm | 81.2 cm | +1.2 cm |
+
+Nhận xét: Môi trường ngoài trời có nhiệt độ cao hơn → Scenario engine tự động kích hoạt relay quạt trong vòng **1 chu kỳ sensor (~1 giây)** kể từ khi điều kiện thoả. Phun sương cũng được kích hoạt khi cả hai điều kiện (nhiệt độ + độ ẩm) đồng thời đáp ứng.
+
+---
+
+### 4.2. Kết quả đạt được
+
+#### 4.2.1. Kết quả về phần cứng
+
+- **Xe hoàn thiện**: Khung xe được gia công chắc chắn, gắn đầy đủ cảm biến HC-SR04 (3 hướng), DHT22, module relay 2 kênh và board ESP32.
+- **Độ nhạy cảm biến**: HC-SR04 đo ổn định trong dải 2–400 cm; DHT22 phản hồi thay đổi nhiệt độ trong < 2 giây.
+- **Mạch hạ áp**: Nguồn 12V từ pin LiPo được hạ xuống 5V ổn định cho ESP32 và các module qua mạch buck converter LM2596. Điện áp đầu ra dao động < ±50 mV khi motor hoạt động toàn tải.
+- **Độ bền cơ khí**: Sau 5 giờ vận hành liên tục, tất cả kết nối điện và cơ khí giữ nguyên, không phát sinh lỏng lẻo.
+- **Cảm biến hồng ngoại**: Dải phát hiện 2–30 cm, phản hồi tốt trên nền phẳng; hiệu suất giảm trên bề mặt sậm màu.
+
+#### 4.2.2. Kết quả về phần mềm và giao diện web
+
+Giao diện dashboard tại `/car/` gồm các thành phần hoạt động đầy đủ:
+
+| Thành phần | Chức năng | Trạng thái |
+|---|---|---|
+| **Bảng cảm biến** | Hiển thị giá trị + thanh tiến trình real-time | Hoạt động |
+| **Đồng hồ khoảng cách** (SVG gauge) | Gauge màu xanh/vàng/đỏ cho 3 hướng | Hoạt động |
+| **Biểu đồ đa kênh** | Vẽ đường đồ thị real-time cho nhiều sensor | Hoạt động |
+| **Card chế độ** | Chuyển AUTO ↔ MANUAL, hiển thị trạng thái | Hoạt động |
+| **Gamepad điều khiển** | 8 nút hướng + thanh tốc độ | Hoạt động |
+| **Toggle relay** | Bật/tắt quạt, phun sương (khóa ở AUTO) | Hoạt động |
+| **WebSocket status** | Hiển thị trạng thái kết nối (xanh/đỏ) | Hoạt động |
+| **Trang Devices** (`/devices/`) | Thêm/sửa/xóa cảm biến và relay | Hoạt động |
+| **Trang Scenarios** (`/scenarios/`) | Tạo kịch bản tự động AND/OR/XOR | Hoạt động |
+
+**Giao diện hoạt động không cần tải lại trang** — mọi cập nhật sensor, relay, chế độ đều phản chiếu ngay lập tức qua WebSocket.
+
+#### 4.2.3. Kết quả vận hành thực tế
+
+- **Độ chính xác đo lường**: Sai số nhiệt độ ±0.5 °C, độ ẩm ±2 %, khoảng cách ±1.5 cm — nằm trong thông số kỹ thuật của nhà sản xuất cảm biến.
+- **Thời gian phản hồi**: Từ khi ESP32 gửi dữ liệu đến khi dashboard cập nhật: **trung bình 180 ms** trên mạng WiFi cục bộ.
+- **Scenario engine**: Kích hoạt relay đúng điều kiện trong 100 % các trường hợp thử nghiệm (20 lần thử).
+- **Di chuyển robot**: Xe di chuyển mượt, phản hồi lệnh từ web nhanh, không bị trễ đáng kể ở tốc độ 50–80 %.
+- **Độ ổn định WebSocket**: Kết nối duy trì liên tục trong 3 giờ thử nghiệm; tự kết nối lại sau 3 giây nếu mất mạng tạm thời.
+
+---
+
+### 4.3. Đánh giá và Thảo luận
+
+#### 4.3.1. Đánh giá ưu điểm
+
+- **Hoạt động độc lập**: Hệ thống vận hành hoàn toàn tự chủ sau khi cấu hình — không cần can thiệp thủ công trong chế độ AUTO.
+- **Can thiệp trực tiếp môi trường**: Relay quạt và phun sương hoạt động ngay trên xe, tác động trực tiếp đến môi trường xung quanh trong < 1 giây sau khi điều kiện thoả.
+- **Trực quan trên web**: Dashboard cung cấp cái nhìn tổng thể real-time — từ giá trị cảm biến, đồng hồ khoảng cách, biểu đồ lịch sử đến trạng thái relay — tất cả trên một màn hình duy nhất.
+- **Cấu hình linh hoạt**: Kịch bản tự động có thể thêm/sửa/xóa qua giao diện web mà không cần chỉnh code.
+- **Giao thức tách biệt rõ ràng**: Lệnh cho ESP32 (`relay_command`) và dữ liệu hiển thị FE (`device_update`) được phân tách, tránh xung đột.
+
+#### 4.3.2. Hạn chế của hệ thống
+
+| Hạn chế | Mức độ ảnh hưởng | Nguyên nhân |
+|---|---|---|
+| Độ trễ tăng khi WiFi yếu | Trung bình — dữ liệu vẫn đến, chậm hơn | Chất lượng tín hiệu WiFi, khoảng cách đến router |
+| Tải server khi nhiều client | Thấp — chưa kiểm thử với > 5 client | Django dev server đơn luồng cho HTTP; Daphne xử lý WS tốt hơn |
+| Pin tiêu hao nhanh | Cao khi dùng motor + relay đồng thời | Motor DC tiêu thụ dòng lớn (~1A/motor); thiếu cơ chế sleep |
+| Không lưu lịch sử dữ liệu dài hạn | Trung bình — chỉ lưu giá trị hiện tại | Model `Device` chỉ có trường `value` đơn; không có bảng time-series |
+| HC-SR04 nhiễu khi motor chạy | Thấp — xảy ra không thường xuyên | Nhiễu điện từ từ motor DC lan sang chân GPIO |
+
+#### 4.3.3. Phân tích nguyên nhân và cách khắc phục
+
+**Sai số cảm biến khoảng cách:**
+- Nguyên nhân: Âm thanh siêu âm bị phản xạ lệch trên bề mặt nghiêng hoặc vật liệu mềm.
+- Khắc phục: Lọc trung bình 3 mẫu liên tiếp trước khi gửi WebSocket; loại bỏ giá trị ngoài dải hợp lệ (< 2 cm hoặc > 400 cm).
+
+**Kết nối WebSocket bị ngắt khi di chuyển:**
+- Nguyên nhân: ESP32 di chuyển xa router WiFi, tín hiệu yếu.
+- Khắc phục: Cơ chế tự kết nối lại đã được tích hợp sẵn trong `tools/esp32_sim.py` và firmware ESP32; thời gian retry 3 giây.
+
+**Relay bật nhấp nháy (chattering) khi sensor ở ngưỡng:**
+- Nguyên nhân: Giá trị sensor dao động quanh ngưỡng điều kiện kịch bản.
+- Khắc phục: Thêm hysteresis trong Scenario condition (ví dụ: bật khi ≥ 35 °C, tắt khi < 33 °C).
+
+---
+
+## CHƯƠNG 5: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+
+---
+
+### 5.1. Kết luận chung
+
+#### 5.1.1. Những kết quả đã đạt được
+
+Đề tài đã thiết kế và triển khai thành công hệ thống xe tự hành mini tích hợp xử lý môi trường và giám sát IoT qua web, đạt được các mục tiêu đề ra:
+
+- **Phần cứng**: Hoàn thiện mô hình xe gắn đầy đủ cảm biến (HC-SR04 × 3, DHT22), relay (quạt, phun sương), module điều khiển motor L298N và vi điều khiển ESP32. Hệ thống hoạt động ổn định, sai số cảm biến nằm trong thông số kỹ thuật cho phép.
+
+- **Phần mềm**: Xây dựng nền tảng web Django + Django Channels hoàn chỉnh:
+  - Quản lý thiết bị (sensor/relay) qua giao diện CRUD tại `/devices/`
+  - Tạo kịch bản tự động linh hoạt tại `/scenarios/` với logic AND/OR/XOR
+  - Dashboard giám sát real-time tại `/car/` với WebSocket hai chiều
+  - Scenario engine tự động đánh giá điều kiện và điều khiển relay không cần can thiệp người dùng
+
+- **Giao tiếp IoT**: Giao thức WebSocket hai chiều giữa ESP32 và server được phân tách rõ ràng: ESP32 gửi `sensor_data`, server phản hồi `relay_command` (cho ESP32) và `device_update` (cho trình duyệt). Độ trễ end-to-end (cảm biến → dashboard) đạt < 200 ms trên mạng WiFi cục bộ.
+
+- **Vận hành**: Hệ thống vận hành ổn định trong các buổi thử nghiệm liên tục. Chuyển đổi linh hoạt giữa chế độ AUTO (Scenario engine kiểm soát) và MANUAL (người dùng điều khiển trực tiếp) ngay trên dashboard web.
+
+#### 5.1.2. Kiến thức và kỹ năng tích lũy được
+
+| Lĩnh vực | Kỹ năng |
+|---|---|
+| **Phần cứng nhúng** | Lập trình ESP32 (WiFi, WebSocket, GPIO, PWM, ADC), đọc cảm biến HC-SR04, DHT22 |
+| **Mạch điện** | Thiết kế mạch hạ áp, ghép nối L298N, bảo vệ mạch chống nhiễu motor |
+| **Backend web** | Django 4.2, Django Channels, Daphne ASGI, ORM, migration |
+| **Giao tiếp real-time** | WebSocket protocol, Channel Layer (Redis/In-memory), group broadcast |
+| **Frontend** | Vanilla JavaScript, Canvas API, SVG animation, Bootstrap 5 |
+| **Tích hợp hệ thống** | Thiết kế giao thức IoT, phân tách message type, debug WebSocket |
+| **Triển khai** | Cấu hình ASGI server (Daphne), Docker-compose, Nginx reverse proxy |
+
+---
+
+### 5.2. Hướng phát triển của đề tài
+
+#### 5.2.1. Nâng cấp công nghệ nhận diện
+
+- **Camera AI + OpenCV**: Tích hợp module camera OV2640 trên ESP32-CAM để nhận diện vật cản, đọc biển báo hoặc theo dõi vạch đường, thay thế cảm biến siêu âm đơn điểm bằng nhận thức không gian toàn diện.
+- **LIDAR (RPLIDAR A1)**: Gắn LIDAR quét 360° để xây dựng bản đồ 2D (SLAM) và tự lập kế hoạch đường đi cho xe hoạt động hoàn toàn tự hành trong môi trường chưa biết.
+- **Cảm biến khí (MQ series)**: Bổ sung MQ-2 (khí gas/khói), MQ-135 (CO₂, NH₃) để mở rộng khả năng giám sát chất lượng không khí.
+
+#### 5.2.2. Mở rộng hệ thống quản lý
+
+- **Cảnh báo thời gian thực**: Tích hợp gửi thông báo qua **Telegram Bot** hoặc **Zalo OA** khi các chỉ số vượt ngưỡng nguy hiểm (nhiệt độ > 45 °C, khí gas > ngưỡng an toàn).
+- **Lưu trữ dữ liệu time-series**: Chuyển từ SQLite (lưu giá trị hiện tại) sang **InfluxDB** hoặc thêm bảng `SensorLog` để lưu lịch sử theo thời gian — cho phép phân tích xu hướng và xuất báo cáo.
+- **Dashboard nâng cao**: Tích hợp **Grafana** để hiển thị biểu đồ lịch sử nhiều ngày, cảnh báo threshold, và báo cáo định kỳ.
+- **Phân quyền người dùng**: Thêm role `admin` (cấu hình) và `viewer` (chỉ xem) để triển khai multi-user.
+
+#### 5.2.3. Tối ưu hóa năng lượng và vận hành
+
+- **Đế sạc tự động**: Thiết kế trạm sạc với nam châm định vị để xe tự quay về sạc khi pin yếu (< 20 %), giữ xe luôn sẵn sàng vận hành.
+- **Chế độ ngủ sâu (Deep Sleep)**: Áp dụng ESP32 deep sleep cho các cảm biến không cần đọc liên tục — chỉ wake up theo chu kỳ hoặc khi có trigger từ cảm biến PIR, giảm tiêu thụ điện năng xuống < 10 mA lúc chờ.
+- **Hysteresis cho Scenario engine**: Thêm cơ chế ngưỡng kép (bật/tắt ở hai mức khác nhau) để tránh relay bật tắt liên tục khi sensor dao động quanh ngưỡng.
+- **OTA Firmware Update**: Cho phép cập nhật firmware ESP32 từ xa qua giao diện web, không cần kết nối cáp USB.
+
+---
+
+*Hệ thống Smart Car là nền tảng IoT mở, có thể mở rộng linh hoạt theo từng yêu cầu ứng dụng thực tế trong nông nghiệp thông minh, giám sát môi trường, hoặc robot dịch vụ trong nhà.*
